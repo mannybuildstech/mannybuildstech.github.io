@@ -1,5 +1,4 @@
 ---
-import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
@@ -21,41 +20,49 @@ const posts = (await getCollection('blog')).sort(
 				width: 960px;
 			}
 			ul {
-				display: flex;
-				flex-wrap: wrap;
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
 				gap: 2rem;
 				list-style-type: none;
 				margin: 0;
 				padding: 0;
 			}
-			ul li {
-				width: calc(50% - 1rem);
-			}
 			ul li * {
 				text-decoration: none;
 				transition: 0.2s ease;
 			}
-			ul li:first-child {
-				width: 100%;
-				margin-bottom: 1rem;
-				text-align: center;
-			}
-			ul li:first-child img {
-				width: 100%;
-			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
-			}
-			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
-			}
 			ul li a {
 				display: block;
+				padding: 1.1rem;
+				border-radius: 12px;
+				background: rgba(var(--gray-light), 22%);
+				border: 1px solid rgba(var(--gray-light), 70%);
+			}
+			.category {
+				display: inline-block;
+				margin-bottom: 0.6rem;
+				padding: 0.35em 0.7em;
+				border-radius: 999px;
+				font-size: 0.72em;
+				font-weight: 700;
+				letter-spacing: 0.04em;
+				text-transform: uppercase;
+			}
+			.category.family {
+				background: rgba(251, 146, 60, 0.2);
+				color: #fdba74;
+			}
+			.category.technology {
+				background: rgba(56, 189, 248, 0.2);
+				color: #67e8f9;
+			}
+			.category.gardening {
+				background: rgba(74, 222, 128, 0.2);
+				color: #86efac;
 			}
 			.title {
 				margin: 0;
-				color: rgb(var(--black));
+				color: rgb(var(--gray-dark));
 				line-height: 1;
 			}
 			.date {
@@ -66,22 +73,13 @@ const posts = (await getCollection('blog')).sort(
 			ul li a:hover .date {
 				color: rgb(var(--accent));
 			}
-			ul a:hover img {
+			ul li a:hover {
 				box-shadow: var(--box-shadow);
 			}
 			@media (max-width: 720px) {
 				ul {
-					gap: 0.5em;
-				}
-				ul li {
-					width: 100%;
-					text-align: center;
-				}
-				ul li:first-child {
-					margin-bottom: 0;
-				}
-				ul li:first-child .title {
-					font-size: 1.563em;
+					grid-template-columns: 1fr;
+					gap: 0.8em;
 				}
 			}
 		</style>
@@ -95,9 +93,7 @@ const posts = (await getCollection('blog')).sort(
 						posts.map((post) => (
 							<li>
 								<a href={`/blog/${post.id}/`}>
-									{post.data.heroImage && (
-										<Image width={720} height={360} src={post.data.heroImage} alt="" />
-									)}
+									<div class={`category ${post.data.category}`}>{post.data.category}</div>
 									<h4 class="title">{post.data.title}</h4>
 									<p class="date">
 										<FormattedDate date={post.data.pubDate} />

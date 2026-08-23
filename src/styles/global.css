@@ -5,24 +5,26 @@
  */
 
 :root {
-	--accent: #2337ff;
-	--accent-dark: #000d8a;
-	--black: 15, 18, 25;
-	--gray: 96, 115, 159;
-	--gray-light: 229, 233, 240;
-	--gray-dark: 34, 41, 57;
-	--gray-gradient: rgba(var(--gray-light), 50%), #fff;
+	--accent: #6ee7ff;
+	--accent-dark: #22d3ee;
+	--black: 7, 10, 18;
+	--gray: 142, 158, 195;
+	--gray-light: 32, 40, 62;
+	--gray-dark: 228, 236, 255;
+	--gray-gradient: rgba(21, 28, 45, 0.9), #070a12;
 	--box-shadow:
-		0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
-		0 16px 32px rgba(var(--gray), 33%);
+		0 2px 10px rgba(0, 0, 0, 35%), 0 12px 30px rgba(0, 0, 0, 45%),
+		0 20px 48px rgba(0, 0, 0, 35%);
 }
 body {
 	font-family: var(--font-atkinson);
 	margin: 0;
 	padding: 0;
 	text-align: left;
-	background: linear-gradient(var(--gray-gradient)) no-repeat;
-	background-size: 100% 600px;
+	background-color: #05070d;
+	background-image: radial-gradient(circle at 20% 0%, #101a30 0%, #070a12 45%, #05070d 100%);
+	background-repeat: no-repeat;
+	background-size: cover;
 	word-wrap: break-word;
 	overflow-wrap: break-word;
 	color: rgb(var(--gray-dark));
@@ -42,7 +44,7 @@ h4,
 h5,
 h6 {
 	margin: 0 0 0.5rem 0;
-	color: rgb(var(--black));
+	color: rgb(var(--gray-dark));
 	line-height: 1.2;
 }
 h1 {
@@ -93,12 +95,13 @@ img {
 }
 code {
 	padding: 2px 5px;
-	background-color: rgb(var(--gray-light));
+	background-color: rgba(var(--gray-light), 80%);
 	border-radius: 2px;
 }
 pre {
 	padding: 1.5em;
 	border-radius: 8px;
+	background: rgba(var(--gray-light), 60%);
 }
 pre > code {
 	all: unset;
@@ -111,7 +114,7 @@ blockquote {
 }
 hr {
 	border: none;
-	border-top: 1px solid rgb(var(--gray-light));
+	border-top: 1px solid rgba(var(--gray-light), 85%);
 }
 @media (max-width: 720px) {
 	body {
