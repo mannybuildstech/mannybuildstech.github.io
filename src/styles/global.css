@@ -11,7 +11,6 @@
 	--gray: 142, 158, 195;
 	--gray-light: 32, 40, 62;
 	--gray-dark: 228, 236, 255;
-	--gray-gradient: rgba(21, 28, 45, 0.9), #070a12;
 	--box-shadow:
 		0 2px 10px rgba(0, 0, 0, 35%), 0 12px 30px rgba(0, 0, 0, 45%),
 		0 20px 48px rgba(0, 0, 0, 35%);
@@ -21,10 +20,7 @@ body {
 	margin: 0;
 	padding: 0;
 	text-align: left;
-	background-color: #05070d;
-	background-image: radial-gradient(circle at 20% 0%, #101a30 0%, #070a12 45%, #05070d 100%);
-	background-repeat: no-repeat;
-	background-size: cover;
+	background-color: #070a12;
 	word-wrap: break-word;
 	overflow-wrap: break-word;
 	color: rgb(var(--gray-dark));
