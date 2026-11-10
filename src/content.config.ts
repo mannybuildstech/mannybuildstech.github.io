@@ -15,6 +15,8 @@ const blog = defineCollection({
 			category: z.enum(blogCategories),
 			// Transform string to Date object
 			pubDate: z.coerce.date(),
+			heroImage: z.string().optional(),
+			heroImageAlt: z.string().optional(),
 			updatedDate: z.coerce.date().optional(),
 		}),
 });
