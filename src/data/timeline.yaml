@@ -1,0 +1,50 @@
+# Career timeline content. Edit this file to change the timeline on the homepage.
+# Each "- period:" block is one milestone, shown in this order (oldest first).
+#   period   - the dates shown on the timeline (e.g. 2014–2015)
+#   title    - the role or focus
+#   employer - the label shown under the title
+#   story    - the text shown when the milestone is selected
+# Long text can wrap over several indented lines after ">-". Keep the indentation.
+# To add a milestone, copy a block, paste it where you want it, and edit it.
+
+- period: "2011"
+  title: Computer engineering
+  employer: UCF
+  story: >-
+    For my senior design project, 'Voltes Fly,' our team built a flight-training rig controlled through Microsoft Flight Simulator. I designed the circuit board that controlled the chassis. I also built a custom joystick using potentiometers and analog-to-digital converters to feed the simulator.
+
+- period: "2011–2014"
+  title: Flight-management software
+  employer: Aerial survey industry
+  story: >-
+    As part of a small team, I helped migrate flight-management software from VB6 to JavaScript and C#. I worked on integrating OpenStreetMap into the flight-planning application and built a C# mobile prototype that guided pilots along a flight plan. I also used camera APIs together with real-time GPS data to trigger camera firings automatically along the planned route.
+
+- period: "2014–2015"
+  title: Mobile developer
+  employer: Nuance Communications
+  story: >-
+    I worked as a client developer on both iOS and Android apps. The work centered on audio streaming and remote events between devices and servers. This was where I first ran into network reliability problems on mobile connections.
+
+- period: "2015–2017"
+  title: Full-stack developer, capacity improvements
+  employer: Nuance Communications
+  story: >-
+    I joined a team working to scale .NET WCF/C# backend services. We load tested them, added Redis caching, and moved services to async/await and concurrent objects to improve throughput and capacity.
+
+- period: "2018–2022"
+  title: SDK platform development
+  employer: Nuance Communications
+  story: >-
+    I was part of the team designing and building client-server SDK features across C++ and C#. A large part of the work was making those features hold up on unreliable networks.
+
+- period: "2022–2023"
+  title: Browser SDK
+  employer: Nuance Communications (2022) · Microsoft (2023)
+  story: >-
+    I helped port the SDK to the browser. My focus was the audio and event processing, and keeping it reliable when connections drop. I continued this browser SDK work into 2023.
+
+- period: "2024–2026"
+  title: Service ownership and SDK tech lead
+  employer: Microsoft
+  story: >-
+    I share ownership of a production microservice, including deployments and on-call. I helped retire a service that was no longer needed, which reduced maintenance and cost and freed the team for other work. I'm also tech lead for an SDK, coordinating its implementation across the team.
