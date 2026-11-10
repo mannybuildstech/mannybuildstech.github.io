@@ -1,0 +1,696 @@
+---
+const mapSize = { width: 800, height: 440 };
+const accessPoints = [
+	{ id: 'wifi-a', label: 'WiFi-A', x: 95, y: 220, radius: 330 },
+	{ id: 'wifi-b', label: 'WiFi-B', x: 705, y: 220, radius: 330 },
+];
+const leftAp = accessPoints[0];
+const rightAp = accessPoints[1];
+const centerDx = rightAp.x - leftAp.x;
+const centerDy = rightAp.y - leftAp.y;
+const centerDistance = Math.hypot(centerDx, centerDy);
+const alongCenters = (leftAp.radius ** 2 - rightAp.radius ** 2 + centerDistance ** 2) / (2 * centerDistance);
+const intersectionHeight = Math.sqrt(Math.max(0, leftAp.radius ** 2 - alongCenters ** 2));
+const baseIntersection = {
+	x: leftAp.x + (alongCenters * centerDx) / centerDistance,
+	y: leftAp.y + (alongCenters * centerDy) / centerDistance,
+};
+const lowerIntersection = {
+	x: baseIntersection.x - (intersectionHeight * centerDy) / centerDistance,
+	y: baseIntersection.y + (intersectionHeight * centerDx) / centerDistance,
+};
+const dangerZone = {
+	x: lowerIntersection.x,
+	y: lowerIntersection.y + 10,
+	halfSize: 45,
+};
+---
+
+<section class="network-demo" aria-label="Interactive network map">
+	<div class="map-frame">
+		<svg
+			class="coverage-map"
+			viewBox={`0 0 ${mapSize.width} ${mapSize.height}`}
+			role="group"
+			aria-label="Interactive Wi-Fi map"
+			aria-describedby="network-map-controls signal-status"
+			tabindex="0"
+		>
+			<defs>
+				<pattern id="map-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+					<path d="M 40 0 L 0 0 0 40" fill="none" stroke="#383e43" stroke-width="1" />
+				</pattern>
+				<radialGradient id="wifi-range">
+					<stop offset="0" stop-color="#77bac1" stop-opacity=".12" />
+					<stop offset="1" stop-color="#77bac1" stop-opacity=".025" />
+				</radialGradient>
+				<filter id="user-glow" x="-150%" y="-150%" width="400%" height="400%">
+					<feGaussianBlur stdDeviation="7" result="blur" />
+					<feMerge>
+						<feMergeNode in="blur" />
+						<feMergeNode in="SourceGraphic" />
+					</feMerge>
+				</filter>
+			</defs>
+
+			<rect x="0" y="0" width={mapSize.width} height={mapSize.height} rx="14" fill="#191d20" />
+			<rect x="0" y="0" width={mapSize.width} height={mapSize.height} rx="14" fill="url(#map-grid)" />
+			<g class="office-plan" aria-hidden="true">
+				<path class="office-wall" d="M 24 24 H 776 V 416 H 24 Z" />
+				<path class="office-partition" d="M 24 92 H 145 M 655 92 H 776 M 24 330 H 250 M 550 330 H 776" />
+				<path class="office-partition" d="M 154 24 V 76 M 646 24 V 76 M 260 386 V 350 M 540 386 V 350" />
+				<g class="office-desk" transform="translate(82 120)">
+					<rect x="-28" y="-16" width="56" height="32" rx="3" />
+					<rect class="office-monitor" x="-10" y="-11" width="20" height="11" rx="1" />
+					<path d="M 0 0 V 5 M -7 7 H 7" />
+					<circle cx="0" cy="27" r="8" />
+				</g>
+				<g class="office-desk" transform="translate(178 120)">
+					<rect x="-28" y="-16" width="56" height="32" rx="3" />
+					<rect class="office-monitor" x="-10" y="-11" width="20" height="11" rx="1" />
+					<path d="M 0 0 V 5 M -7 7 H 7" />
+					<circle cx="0" cy="27" r="8" />
+				</g>
+				<g class="office-desk" transform="translate(622 120)">
+					<rect x="-28" y="-16" width="56" height="32" rx="3" />
+					<rect class="office-monitor" x="-10" y="-11" width="20" height="11" rx="1" />
+					<path d="M 0 0 V 5 M -7 7 H 7" />
+					<circle cx="0" cy="27" r="8" />
+				</g>
+				<g class="office-desk" transform="translate(718 120)">
+					<rect x="-28" y="-16" width="56" height="32" rx="3" />
+					<rect class="office-monitor" x="-10" y="-11" width="20" height="11" rx="1" />
+					<path d="M 0 0 V 5 M -7 7 H 7" />
+					<circle cx="0" cy="27" r="8" />
+				</g>
+				<g class="office-desk" transform="translate(110 350)">
+					<rect x="-28" y="-16" width="56" height="32" rx="3" />
+					<rect class="office-monitor" x="-10" y="-11" width="20" height="11" rx="1" />
+					<path d="M 0 0 V 5 M -7 7 H 7" />
+					<circle cx="0" cy="27" r="8" />
+				</g>
+				<g class="office-desk" transform="translate(690 350)">
+					<rect x="-28" y="-16" width="56" height="32" rx="3" />
+					<rect class="office-monitor" x="-10" y="-11" width="20" height="11" rx="1" />
+					<path d="M 0 0 V 5 M -7 7 H 7" />
+					<circle cx="0" cy="27" r="8" />
+				</g>
+			</g>
+			<line class="connection-path" x1={dangerZone.x} y1={dangerZone.y} x2={leftAp.x} y2={leftAp.y} />
+			{accessPoints.map((point) => (
+				<g
+					class="access-point"
+					data-ap={point.id}
+					data-label={point.label}
+					data-x={point.x}
+					data-y={point.y}
+					data-radius={point.radius}
+					data-active={point.id === 'wifi-a' ? 'true' : 'false'}
+				>
+					<circle
+						class="range-fill"
+						cx={point.x}
+						cy={point.y}
+						r={point.radius}
+						fill="url(#wifi-range)"
+					/>
+					<circle
+						class="range-ring wifi-ring"
+						cx={point.x}
+						cy={point.y}
+						r={point.radius}
+					/>
+					<g class="router-marker" transform={`translate(${point.x} ${point.y})`}>
+						<rect class="router-body" x="-17" y="-10" width="34" height="20" rx="4" />
+						<path class="router-antenna" d="M -11 -10 L -15 -17 M 11 -10 L 15 -17" />
+						<circle class="router-light" cx="-7" cy="3" r="1.5" />
+						<circle class="router-light" cx="0" cy="3" r="1.5" />
+						<circle class="router-light" cx="7" cy="3" r="1.5" />
+					</g>
+					<text class="map-label" x={point.x} y={point.y + 29} text-anchor="middle">
+						{point.label}
+					</text>
+				</g>
+			))}
+
+			<g class="signal-meter" data-quality="low" data-bars="1" aria-hidden="true">
+				<rect class="signal-card" x="416" y="28" width="360" height="62" rx="8" />
+				<text class="signal-value" x="432" y="65">Weak · danger zone</text>
+				<g class="signal-bars" transform="translate(704 43)">
+					<rect class="signal-bar" x="0" y="26" width="10" height="9" rx="2" />
+					<rect class="signal-bar" x="16" y="20" width="10" height="15" rx="2" />
+					<rect class="signal-bar" x="32" y="13" width="10" height="22" rx="2" />
+					<rect class="signal-bar" x="48" y="6" width="10" height="29" rx="2" />
+				</g>
+			</g>
+
+			<g class="unreliability-zone" aria-hidden="true">
+				<rect
+					x={dangerZone.x - dangerZone.halfSize}
+					y={dangerZone.y - dangerZone.halfSize}
+					width={dangerZone.halfSize * 2}
+					height={dangerZone.halfSize * 2}
+					data-center-x={dangerZone.x}
+					data-center-y={dangerZone.y}
+					data-half-size={dangerZone.halfSize}
+					rx="2"
+				/>
+				<text x={dangerZone.x} y={dangerZone.y + dangerZone.halfSize + 14} text-anchor="middle">
+					UNRELIABILITY ZONE
+				</text>
+			</g>
+			<g class="workstation" aria-hidden="true" transform={`translate(${dangerZone.x} ${dangerZone.y})`}>
+				<rect class="workstation-monitor" x="-15" y="-13" width="30" height="22" rx="2" />
+				<rect class="workstation-screen" x="-11" y="-9" width="22" height="14" rx="1" />
+				<path d="M 0 9 V 14 M -7 16 H 7" />
+			</g>
+
+			<g class="user-marker" transform={`translate(${dangerZone.x} ${dangerZone.y})`} aria-hidden="true">
+				<circle class="user-glow" r="14" filter="url(#user-glow)" />
+				<circle class="user-dot" r="8" />
+				<circle class="user-halo" r="16" />
+				<text class="user-network-label" data-network="wifi-a" x="0" y="-25" text-anchor="middle">WiFi-A</text>
+			</g>
+			<rect class="map-hit-area" x="0" y="0" width={mapSize.width} height={mapSize.height} rx="14" />
+		</svg>
+		<div class="map-overlay" aria-hidden="true">
+			<span>move user using wasd keys</span>
+		</div>
+	</div>
+
+	<div class="map-actions">
+		<button class="cycle-toggle" type="button">Pause cycling</button>
+	</div>
+	<p class="sr-only" id="network-map-controls">
+		Drag the user marker to move it. To use the keyboard, focus the map and press W, A, S, D or an arrow key.
+	</p>
+	<p class="sr-only" id="signal-status" aria-live="off">Weak signal. Connected to WiFi-A.</p>
+</section>
+
+<script>
+	const demo = document.querySelector<HTMLElement>('.network-demo');
+	const map = demo?.querySelector<SVGSVGElement>('.coverage-map');
+	const userMarker = demo?.querySelector<SVGGElement>('.user-marker');
+	const userNetworkLabel = demo?.querySelector<SVGTextElement>('.user-network-label');
+	const signalMeter = demo?.querySelector<SVGGElement>('.signal-meter');
+	const signalValue = signalMeter?.querySelector<SVGTextElement>('.signal-value');
+	const signalStatus = demo?.querySelector<HTMLElement>('#signal-status');
+	const connectionPath = demo?.querySelector<SVGLineElement>('.connection-path');
+	const accessPointGroups = Array.from(demo?.querySelectorAll<SVGGElement>('.access-point') ?? []);
+	const pauseButton = demo?.querySelector<HTMLButtonElement>('.cycle-toggle');
+	const zoneRect = demo?.querySelector<SVGRectElement>('.unreliability-zone rect');
+	const mapPoints = accessPointGroups.map((group) => ({
+		id: group.dataset.ap ?? '',
+		label: group.dataset.label ?? '',
+		x: Number(group.dataset.x),
+		y: Number(group.dataset.y),
+		radius: Number(group.dataset.radius),
+	}));
+	const mapBounds = map?.viewBox.baseVal;
+	const switchMargin = 24;
+	let position = {
+		x: Number(zoneRect?.dataset.centerX),
+		y: Number(zoneRect?.dataset.centerY),
+	};
+	let currentConnection = 'wifi-a';
+	let cycleIndex = 0;
+	let cycleTimer: number | undefined;
+	let cyclingPaused = false;
+	let mapIsVisible = true;
+	let dragging = false;
+	let pointerId: number | undefined;
+	const controller = new AbortController();
+	const { signal } = controller;
+	const zoneCenter = {
+		x: Number(zoneRect?.dataset.centerX),
+		y: Number(zoneRect?.dataset.centerY),
+		halfSize: Number(zoneRect?.dataset.halfSize),
+	};
+	const zoneConnections = ['wifi-a', 'wifi-b', 'cellular'] as const;
+
+	const distanceFrom = (point: { x: number; y: number }) =>
+		Math.hypot(position.x - point.x, position.y - point.y);
+	const isInUnreliabilityZone = () =>
+		Math.abs(position.x - zoneCenter.x) <= zoneCenter.halfSize &&
+		Math.abs(position.y - zoneCenter.y) <= zoneCenter.halfSize;
+	const connectionLabel = (connection: string) => {
+		const point = mapPoints.find((item) => item.id === connection);
+		if (point) return point.label;
+		return 'Cellular';
+	};
+
+	const stopCycling = () => {
+		if (cycleTimer !== undefined) window.clearInterval(cycleTimer);
+		cycleTimer = undefined;
+	};
+
+	const syncCycling = () => {
+		const inZone = isInUnreliabilityZone();
+		if (pauseButton) {
+			pauseButton.hidden = !inZone;
+			pauseButton.textContent = cyclingPaused ? 'Resume cycling' : 'Pause cycling';
+		}
+		if (!inZone || cyclingPaused || !mapIsVisible || document.hidden) {
+			stopCycling();
+			return;
+		}
+		if (cycleTimer !== undefined) return;
+		cycleTimer = window.setInterval(() => {
+			if (!isInUnreliabilityZone() || cyclingPaused || !mapIsVisible || document.hidden) {
+				stopCycling();
+				return;
+			}
+			cycleIndex = (cycleIndex + 1) % zoneConnections.length;
+			setConnection(zoneConnections[cycleIndex]);
+		}, 2000);
+	};
+
+	const updateConnectionDisplay = () => {
+		if (userNetworkLabel) {
+			userNetworkLabel.textContent = connectionLabel(currentConnection);
+			userNetworkLabel.dataset.network = currentConnection;
+		}
+		for (const group of accessPointGroups) {
+			group.dataset.active = String(group.dataset.ap === currentConnection);
+		}
+		const selectedPoint = mapPoints.find((point) => point.id === currentConnection);
+		if (connectionPath && selectedPoint) {
+			connectionPath.setAttribute('x1', String(position.x));
+			connectionPath.setAttribute('y1', String(position.y));
+			connectionPath.setAttribute('x2', String(selectedPoint.x));
+			connectionPath.setAttribute('y2', String(selectedPoint.y));
+			connectionPath.removeAttribute('visibility');
+		} else {
+			connectionPath?.setAttribute('visibility', 'hidden');
+		}
+	};
+
+	const setConnection = (connection: string) => {
+		currentConnection = connection;
+		updateConnectionDisplay();
+		updateSignal();
+	};
+
+	const updateSignal = () => {
+		if (!signalMeter || !signalValue || !signalStatus) return;
+		const [inA, inB] = mapPoints.map((point) => distanceFrom(point) <= point.radius);
+		let quality: 'low' | 'medium' | 'high' | 'cellular';
+		let value: string;
+		let description: string;
+		let bars: string;
+		if (isInUnreliabilityZone()) {
+			quality = 'low';
+			value = 'Weak · danger zone';
+			description = 'Weak signal in danger zone';
+			bars = '1';
+		} else if (inA && inB) {
+			quality = 'medium';
+			value = 'Fair · overlapping Wi-Fi';
+			description = 'Fair signal in overlapping Wi-Fi';
+			bars = '2';
+		} else if (inA || inB) {
+			quality = 'high';
+			value = `Strong · ${inA ? 'WiFi-A' : 'WiFi-B'} only`;
+			description = `Strong signal in ${inA ? 'WiFi-A' : 'WiFi-B'} only`;
+			bars = '4';
+		} else {
+			quality = 'cellular';
+			value = 'Cellular · no Wi-Fi';
+			description = 'Cellular connection';
+			bars = '0';
+		}
+		signalMeter.dataset.quality = quality;
+		signalMeter.dataset.bars = bars;
+		signalMeter.setAttribute('aria-label', `${description}. Connected to ${connectionLabel(currentConnection)}.`);
+		signalValue.textContent = value;
+		signalStatus.textContent = `${description}. Connected to ${connectionLabel(currentConnection)}.`;
+	};
+
+	const connectionOutsideZone = () => {
+		const inRange = mapPoints.filter((point) => distanceFrom(point) <= point.radius);
+		if (inRange.length === 0) return 'cellular';
+		const activePoint = mapPoints.find((point) => point.id === currentConnection);
+		if (activePoint && distanceFrom(activePoint) <= activePoint.radius + switchMargin) {
+			const closerPoint = inRange
+				.filter((point) => point.id !== activePoint.id)
+				.sort((a, b) => distanceFrom(a) - distanceFrom(b))[0];
+			if (closerPoint && distanceFrom(closerPoint) + switchMargin < distanceFrom(activePoint)) {
+				return closerPoint.id;
+			}
+			return currentConnection;
+		}
+		return inRange.sort((a, b) => distanceFrom(a) - distanceFrom(b))[0].id;
+	};
+
+	const updatePosition = (x: number, y: number) => {
+		const nextPosition = {
+			x: Math.round(Math.max(20, Math.min(mapBounds.width - 20, x))),
+			y: Math.round(Math.max(25, Math.min(mapBounds.height - 25, y))),
+		};
+		if (nextPosition.x === position.x && nextPosition.y === position.y) return;
+		const wasInZone = isInUnreliabilityZone();
+		position = nextPosition;
+		if (userMarker) {
+			const markerLabelX = Math.max(75, Math.min(mapBounds.width - 75, position.x));
+			userMarker.setAttribute('transform', `translate(${position.x} ${position.y})`);
+			if (userNetworkLabel) userNetworkLabel.setAttribute('x', String(markerLabelX - position.x));
+		}
+		const inZone = isInUnreliabilityZone();
+		if (inZone && !wasInZone) {
+			cycleIndex = 0;
+			setConnection(zoneConnections[cycleIndex]);
+		} else if (!inZone) {
+			stopCycling();
+			cycleIndex = 0;
+			setConnection(connectionOutsideZone());
+		} else {
+			updateConnectionDisplay();
+			updateSignal();
+		}
+		syncCycling();
+	};
+
+	map?.addEventListener('keydown', (event) => {
+		const movements: Record<string, { x: number; y: number }> = {
+			w: { x: 0, y: -12 },
+			arrowup: { x: 0, y: -12 },
+			a: { x: -12, y: 0 },
+			arrowleft: { x: -12, y: 0 },
+			s: { x: 0, y: 12 },
+			arrowdown: { x: 0, y: 12 },
+			d: { x: 12, y: 0 },
+			arrowright: { x: 12, y: 0 },
+		};
+		const movement = movements[event.key.toLowerCase()];
+		if (!movement) return;
+		event.preventDefault();
+		updatePosition(position.x + movement.x, position.y + movement.y);
+	}, { signal });
+	pauseButton?.addEventListener('click', () => {
+		cyclingPaused = !cyclingPaused;
+		syncCycling();
+	}, { signal });
+	document.addEventListener('visibilitychange', syncCycling, { signal });
+	window.addEventListener('pagehide', cleanup, { signal, once: true });
+	document.addEventListener('astro:before-swap', cleanup, { signal, once: true });
+
+	const observer = typeof IntersectionObserver === 'undefined'
+		? undefined
+		: new IntersectionObserver(([entry]) => {
+				mapIsVisible = entry.isIntersecting;
+				syncCycling();
+			});
+	if (demo && observer) observer.observe(demo);
+
+	function cleanup() {
+		stopCycling();
+		observer?.disconnect();
+		controller.abort();
+	}
+
+	updateConnectionDisplay();
+	updateSignal();
+	syncCycling();
+
+	const pointerPosition = (event: PointerEvent) => {
+		if (!map) return;
+		const svgPoint = map.createSVGPoint();
+		svgPoint.x = event.clientX;
+		svgPoint.y = event.clientY;
+		const screenMatrix = map.getScreenCTM();
+		if (!screenMatrix) return;
+		const point = svgPoint.matrixTransform(screenMatrix.inverse());
+		updatePosition(point.x, point.y);
+	};
+	map?.addEventListener('pointerdown', (event) => {
+		map.focus();
+		const target = event.target;
+		if (!(target instanceof SVGElement) || !target.closest('.user-marker')) return;
+		dragging = true;
+		pointerId = event.pointerId;
+		map.setPointerCapture(event.pointerId);
+		pointerPosition(event);
+	}, { signal });
+	map?.addEventListener('pointermove', (event) => {
+		if (dragging && event.pointerId === pointerId) pointerPosition(event);
+	}, { signal });
+	map?.addEventListener('pointerup', (event) => {
+		if (!dragging || event.pointerId !== pointerId) return;
+		dragging = false;
+		pointerId = undefined;
+		if (map.hasPointerCapture(event.pointerId)) map.releasePointerCapture(event.pointerId);
+	}, { signal });
+	map?.addEventListener('pointercancel', () => {
+		dragging = false;
+		pointerId = undefined;
+	}, { signal });
+</script>
+
+<style>
+	.network-demo {
+		--map-text: #e5e8e9;
+		--map-muted: #a7afb3;
+		--map-border: #394146;
+		--map-user: #f0d091;
+		--map-wifi: #83c0c5;
+		--map-cell: #d3a75d;
+		color: var(--map-text);
+	}
+	.map-frame {
+		position: relative;
+		overflow: hidden;
+		border: 1px solid var(--map-border);
+		border-radius: 0.8rem;
+		background: #191d20;
+	}
+	.coverage-map {
+		display: block;
+		width: 100%;
+		height: auto;
+		touch-action: none;
+	}
+	.coverage-map:focus-visible {
+		outline: 2px solid var(--map-wifi);
+		outline-offset: 3px;
+	}
+	.office-plan {
+		fill: none;
+		stroke: #65756a;
+		stroke-width: 1.5;
+		opacity: 0.48;
+	}
+	.office-wall {
+		stroke-width: 3;
+	}
+	.office-partition {
+		stroke-dasharray: 11 5;
+	}
+	.office-desk rect:first-child {
+		fill: #222927;
+		stroke: #718078;
+	}
+	.office-desk .office-monitor {
+		fill: #425956;
+		stroke: #8caaa2;
+	}
+	.office-desk circle {
+		fill: #202725;
+	}
+	.range-ring {
+		fill: none;
+		stroke-width: 1.5;
+		stroke-dasharray: 4 7;
+	}
+	.wifi-ring {
+		stroke: var(--map-wifi);
+		opacity: 0.55;
+	}
+	.access-point[data-active='true'] .router-body {
+		fill: #37504b;
+		stroke: #e8d39d;
+		stroke-width: 2.5;
+	}
+	.connection-path {
+		stroke: #f0d091;
+		stroke-dasharray: 4 5;
+		stroke-width: 2;
+		opacity: 0.8;
+		pointer-events: none;
+	}
+	.map-label,
+	.user-marker text {
+		fill: var(--map-text);
+		font-family: var(--font-atkinson), sans-serif;
+		font-size: 14px;
+		font-weight: 700;
+		paint-order: stroke;
+		stroke: #191d20;
+		stroke-linejoin: round;
+		stroke-width: 4px;
+	}
+	.user-marker {
+		cursor: grab;
+		pointer-events: all;
+	}
+	.user-marker:active {
+		cursor: grabbing;
+	}
+	.user-dot {
+		fill: var(--map-user);
+		stroke: #fff3d4;
+		stroke-width: 2;
+	}
+	.user-glow {
+		fill: #f0d091;
+		fill-opacity: 0.4;
+	}
+	.user-halo {
+		fill: none;
+		stroke: var(--map-user);
+		stroke-dasharray: 2 4;
+		stroke-opacity: 0.75;
+	}
+	.user-marker text {
+		font-size: 10px;
+		letter-spacing: 1.1px;
+	}
+	.user-marker .user-network-label {
+		fill: #fff3d4;
+		font-size: 11px;
+		letter-spacing: 0.2px;
+	}
+	.user-network-label[data-network='cellular'] {
+		fill: var(--map-cell);
+	}
+	.signal-card {
+		fill: #202629;
+		fill-opacity: 0.96;
+		stroke: #566166;
+	}
+	.signal-value {
+		fill: #d3d9db;
+		font-family: var(--font-atkinson), sans-serif;
+		font-size: 12px;
+		font-weight: 700;
+	}
+	.signal-bar {
+		fill: #70797d;
+	}
+	.signal-meter[data-quality='low'] .signal-value,
+	.signal-meter[data-quality='low'] .signal-bar:nth-child(1) {
+		fill: #ff7770;
+	}
+	.signal-meter[data-quality='medium'] .signal-value,
+	.signal-meter[data-quality='medium'] .signal-bar:nth-child(-n + 2) {
+		fill: #f0cb62;
+	}
+	.signal-meter[data-quality='high'] .signal-value,
+	.signal-meter[data-quality='high'] .signal-bar {
+		fill: #82d394;
+	}
+	.signal-meter[data-quality='cellular'] .signal-value {
+		fill: var(--map-muted);
+	}
+	.signal-meter[data-bars='0'] .signal-bar {
+		fill: #596267;
+		opacity: 0.45;
+	}
+	.unreliability-zone rect {
+		fill: #d74d4d;
+		fill-opacity: 0.045;
+		stroke: #ed7770;
+		stroke-dasharray: 7 5;
+		stroke-width: 2;
+	}
+	.unreliability-zone text {
+		fill: #ff9d95;
+		font-family: var(--font-atkinson), sans-serif;
+		font-size: 9px;
+		font-weight: 700;
+		letter-spacing: 0.8px;
+		paint-order: stroke;
+		stroke: #191d20;
+		stroke-linejoin: round;
+		stroke-width: 3px;
+	}
+	.workstation-monitor {
+		fill: #2a302f;
+		stroke: #d99a91;
+		stroke-width: 1.5;
+	}
+	.workstation-screen {
+		fill: #4a6461;
+		stroke: #d9e8e2;
+		stroke-width: 0.8;
+	}
+	.workstation > path {
+		stroke: #c1d5cd;
+		stroke-width: 1.5;
+	}
+	.map-hit-area {
+		fill: transparent;
+		pointer-events: none;
+	}
+	.map-overlay {
+		position: absolute;
+		top: 0.65rem;
+		left: 0.75rem;
+		padding: 0.35rem 0.55rem;
+		border: 1px solid rgb(57 65 70 / 80%);
+		border-radius: 0.3rem;
+		background: rgb(25 29 32 / 92%);
+		color: var(--map-muted);
+		font-size: 0.65rem;
+		letter-spacing: 0.02em;
+		pointer-events: none;
+	}
+	.router-marker {
+		fill: #263638;
+		stroke: #b6e0e1;
+		stroke-width: 1.5;
+	}
+	.router-antenna {
+		fill: none;
+		stroke-linecap: round;
+	}
+	.router-light {
+		fill: #83c0c5;
+		stroke: none;
+	}
+	.map-actions {
+		display: flex;
+		justify-content: flex-end;
+		margin-top: 0.45rem;
+	}
+	.cycle-toggle {
+		padding: 0.25rem 0.55rem;
+		border: 1px solid var(--map-border);
+		border-radius: 999px;
+		background: transparent;
+		color: var(--map-muted);
+		font: inherit;
+		font-size: 0.72rem;
+		cursor: pointer;
+	}
+	.cycle-toggle:hover {
+		border-color: var(--map-wifi);
+		color: var(--map-text);
+	}
+	.cycle-toggle:focus-visible {
+		outline: 2px solid var(--map-wifi);
+		outline-offset: 3px;
+	}
+	@media (max-width: 620px) {
+		.map-overlay {
+			top: 0.4rem;
+			left: 0.45rem;
+			font-size: 0.55rem;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.coverage-map * {
+			scroll-behavior: auto;
+			transition: none !important;
+		}
+	}
+</style>

@@ -1,0 +1,24 @@
+---
+title: 'Network Connection Roulette'
+description: 'Network Connection Roulette'
+category: 'technology'
+pubDate: 'Nov 9 2026'
+---
+
+import NetworkCoverageMap from '../../components/NetworkCoverageMap.astro';
+
+We have become so used to working with apps on the go, that it is easy to take for granted how much work goes on under the hood to preserve and maintain the users' state of flow while transitioning from one place to another.
+
+I once investigated a scenario that I thought was very unlikely: a user that spent a lot of their time in front of a workstation located in a very unfortunate place. It was close enough to 2 different WiFi connections that their android phone would connect and be somewhat functional, but very easily would lose connection, and automatically jump to the second connection, sometimes defaulting to cellphone signal, and even jumping between all 3.
+
+I looked at the log is disbelief, who is this very unlucky preson! and can their IT department buy WiFi repeaters?
+
+Tweaking timeouts to be more graceful, making sure network communication assumes worse case scenario and at least retries a little bit, waiting until network is reliable enough, these are some of the strategies we can implement to help people in those circumstances.
+
+Here's a visual example of the situation - imagine the user moving around the office throughout the day, stopping at various computers, and their device automatically switching as needed.
+
+From my experience with this, android devices by default jump connections very quickly, and developers should take better care of timeouts, and http communication parameters. iOS seemed to perform better or at least try to mask the issue rather then hop around.
+
+Move the user with the WASD keys and see how their network connection is affected based on their location
+
+<NetworkCoverageMap />
